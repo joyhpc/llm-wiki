@@ -70,3 +70,11 @@ def _parse_query_response(response: str) -> tuple[str, list]:
 
     answer = '\n'.join(answer_lines).strip()
     return answer, sources
+
+from core.router import detect_query_target
+
+def query_wiki_auto(question: str, base_path: Path, llm: LLMProvider) -> Dict[str, str]:
+    """自动检测目标并查询"""
+    target = detect_query_target(question)
+    wiki_dir = base_path / target
+    return query_wiki(question, wiki_dir, llm)

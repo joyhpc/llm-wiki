@@ -1,5 +1,6 @@
 from pathlib import Path
 from datetime import datetime
+from typing import Dict, List
 from core.llm import LLMProvider
 from utils.parser import parse_document
 from utils.file_ops import write_file, append_file
@@ -10,58 +11,113 @@ def ingest_document(
     index_file: Path,
     log_file: Path,
     llm: LLMProvider
-):
-    """导入文档到 wiki"""
+) -> Dict[str, List[str]]:
+    """导入文档到 wiki，返回创建的页面列表"""
     parsed = parse_document(source_file)
     content = parsed['content']
 
-    prompt = f"""You are maintaining a wiki. A new document has been added.
+    target = wiki_dir.name  # wiki 或 personal
 
-Source file: {source_file.name}
+    prompt = f"""You are maintaining a {target} knowledge base.
+
+Source: {source_file.name}
 Content:
 {content}
 
 Tasks:
-1. Extract key information from this document
-2. Decide which wiki page(s) to update or create
-3. Generate the wiki page content in markdown format
+1. Create summary page in sources/
+2. Update or create relevant pages in concepts/ and entities/
+3. Return structured output
 
-Output format:
-FILENAME: <page-name>.md
+Output format (one page per line):
+PAGE: sources/filename.md
 CONTENT:
 <markdown content>
+---
+PAGE: concepts/concept-name.md
+CONTENT:
+<markdown content>
+---
 """
 
     response = llm.generate(prompt)
-    filename, page_content = _parse_llm_response(response)
+    pages = _parse_multi_page_response(response)
 
-    wiki_page = wiki_dir / filename
-    write_file(wiki_page, page_content)
+    # 写入所有页面
+    created_pages = []
+    for page_path, page_content in pages.items():
+        full_path = wiki_dir / page_path
+        write_file(full_path, page_content)
+        created_pages.append(page_path)
 
-    log_entry = f"## [{datetime.now().strftime('%Y-%m-%d')}] ingest | Added {source_file.name} -> {filename}\n\n"
+    # 更新 index.md
+    _update_index(index_file, created_pages)
+
+    # 更新 log.md
+    log_entry = f"## [{datetime.now().strftime('%Y-%m-%d %H:%M')}] ingest | {source_file.name} → {len(created_pages)} pages\n\n"
     if log_file.exists():
         append_file(log_file, log_entry)
     else:
         write_file(log_file, log_entry)
 
-    return wiki_page
+    # 删除源文件
+    source_file.unlink()
 
-def _parse_llm_response(response: str) -> tuple[str, str]:
-    """解析 LLM 响应，提取文件名和内容"""
+    return {'pages': created_pages}
+
+def _parse_multi_page_response(response: str) -> Dict[str, str]:
+    """解析 LLM 多页面响应"""
+    pages = {}
     lines = response.split('\n')
-    filename = None
-    content_lines = []
+    current_page = None
+    current_content = []
     in_content = False
 
     for line in lines:
-        if line.startswith('FILENAME:'):
-            filename = line.replace('FILENAME:', '').strip()
+        if line.startswith('PAGE:'):
+            if current_page and current_content:
+                pages[current_page] = '\n'.join(current_content).strip()
+            current_page = line.replace('PAGE:', '').strip()
+            current_content = []
+            in_content = False
         elif line.startswith('CONTENT:'):
             in_content = True
+        elif line == '---':
+            if current_page and current_content:
+                pages[current_page] = '\n'.join(current_content).strip()
+            current_page = None
+            current_content = []
+            in_content = False
         elif in_content:
-            content_lines.append(line)
+            current_content.append(line)
 
-    if not filename:
-        filename = 'untitled.md'
+    if current_page and current_content:
+        pages[current_page] = '\n'.join(current_content).strip()
 
-    return filename, '\n'.join(content_lines).strip()
+    return pages
+
+def _update_index(index_file: Path, new_pages: List[str]):
+    """更新 index.md 添加新页面链接"""
+    if not index_file.exists():
+        return
+
+    content = index_file.read_text(encoding='utf-8')
+    lines = content.split('\n')
+
+    # 按子目录分组
+    for page in new_pages:
+        subdir = page.split('/')[0]
+        link = f"- [[{page}]]"
+
+        # 找到对应的 section 并添加链接
+        section_header = f"## {subdir.title()}"
+        for i, line in enumerate(lines):
+            if line.startswith(section_header):
+                # 在下一个空行或下一个 ## 之前插入
+                j = i + 1
+                while j < len(lines) and not lines[j].startswith('##') and lines[j].strip():
+                    j += 1
+                lines.insert(j, link)
+                break
+
+    write_file(index_file, '\n'.join(lines))
