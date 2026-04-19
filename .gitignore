@@ -7,3 +7,4 @@ raw/
 wiki/
 *.md
 !README.md
+venv/
