@@ -128,7 +128,8 @@ def _load_config():
         api_key = config['llm']['api_key']
         if api_key.startswith('${') and api_key.endswith('}'):
             env_var = api_key[2:-1]
-            config['llm']['api_key'] = os.getenv(env_var, '')
+            # Try both ANTHROPIC_API_KEY and ANTHROPIC_AUTH_TOKEN
+            config['llm']['api_key'] = os.getenv(env_var) or os.getenv('ANTHROPIC_AUTH_TOKEN', '')
 
     return config
 

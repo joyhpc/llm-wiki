@@ -9,7 +9,12 @@ class LLMProvider(ABC):
 
 class ClaudeProvider(LLMProvider):
     def __init__(self, api_key: str, model: str):
-        self.client = Anthropic(api_key=api_key)
+        import os
+        base_url = os.getenv('ANTHROPIC_BASE_URL')
+        if base_url:
+            self.client = Anthropic(api_key=api_key, base_url=base_url)
+        else:
+            self.client = Anthropic(api_key=api_key)
         self.model = model
 
     def generate(self, prompt: str) -> str:
