@@ -1,62 +1,94 @@
-# LLM Wiki
+# LLM Wiki 双知识库系统
 
 基于 [Karpathy gist](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) 的 LLM Wiki 系统。
 
-## 特性
+## 架构
 
-- LLM 维护结构化 markdown wiki
-- 支持 Claude API 和 Ollama
-- 文档导入、查询、搜索
-- Wiki 健康检查
+双知识库设计：
+- **wiki/** - 客观知识（外部资料、技术原理）
+- **personal/** - 主观知识（个人经历、项目、反思）
+
+两个库完全同构但严格隔离，避免知识污染。
 
 ## 安装
 
 ```bash
+python3 -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## 配置
+## 初始化
 
-复制 `config.yaml` 并配置：
-
-```yaml
-llm:
-  provider: claude  # 或 ollama
-  model: claude-opus-4-6
-  api_key: ${ANTHROPIC_API_KEY}
+```bash
+source venv/bin/activate
+python wiki_cli.py init
 ```
 
 ## 使用
 
+### 导入文档
+
 ```bash
-# 初始化
-python3 wiki_cli.py init
+# 导入到 wiki（默认）
+python wiki_cli.py ingest article.md
 
-# 导入文档
-python3 wiki_cli.py ingest path/to/document.md
-
-# 查询
-python3 wiki_cli.py query "What is Python?"
-
-# 搜索
-python3 wiki_cli.py search "keyword"
-
-# 健康检查
-python3 wiki_cli.py lint
+# 导入到 personal
+python wiki_cli.py ingest personal my-project-log.md
 ```
 
-## 架构
+### 查询知识
+
+```bash
+# 查客观知识（默认）
+python wiki_cli.py query "What is Transformer?"
+
+# 查个人经验（自动检测）
+python wiki_cli.py query "我之前怎么调试的？"
+```
+
+### 健康检查
+
+```bash
+python wiki_cli.py lint
+```
+
+## 目录结构
 
 ```
-raw/              # 原始文档（不可变）
-wiki/             # LLM 生成的 wiki 页面
-index.md          # 内容目录
-log.md            # 操作日志
-schema.md         # Wiki 结构配置
+HPC_VAULT/
+├── .claude/
+│   └── CLAUDE.md          # Schema 定义
+├── wiki/                  # 客观知识库
+│   ├── index.md
+│   ├── log.md
+│   ├── sources/
+│   ├── concepts/
+│   ├── entities/
+│   ├── comparisons/
+│   └── questions/
+├── personal/              # 主观知识库
+│   ├── index.md
+│   ├── log.md
+│   ├── sources/
+│   ├── concepts/
+│   ├── entities/
+│   └── reflections/
+└── raw/                   # 待处理文档
+    └── assets/
 ```
+
+## 核心特性
+
+1. **严格隔离**：wiki 和 personal 互不污染
+2. **自动路由**：ingest 默认进 wiki，ingest personal 进 personal
+3. **规模监控**：lint 自动检查 index 大小，提醒重构
+4. **同构设计**：两个库结构完全一致
+5. **交叉引用**：personal 可以引用 wiki，反之禁止
 
 ## 测试
 
 ```bash
-python3 -m pytest tests/ -v
+source venv/bin/activate
+python -m pytest tests/ -v
 ```
