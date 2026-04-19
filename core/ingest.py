@@ -18,26 +18,33 @@ def ingest_document(
 
     target = wiki_dir.name  # wiki 或 personal
 
-    prompt = f"""You are maintaining a {target} knowledge base.
+    prompt = f"""Extract and organize information from this document into a knowledge base.
 
-Source: {source_file.name}
-Content:
+Source file: {source_file.name}
+
+Document content:
 {content}
 
-Tasks:
-1. Create summary page in sources/
-2. Update or create relevant pages in concepts/ and entities/
-3. Return structured output
+Create the following pages:
 
-Output format (one page per line):
-PAGE: sources/filename.md
+1. A summary page in sources/ directory
+2. Relevant concept pages in concepts/ directory
+3. Relevant entity pages in entities/ directory
+
+Use this exact output format:
+
+PAGE: sources/document-name.md
 CONTENT:
-<markdown content>
+# Document Title
+Summary of the document.
 ---
 PAGE: concepts/concept-name.md
 CONTENT:
-<markdown content>
+# Concept Name
+Explanation of the concept.
 ---
+
+Start your response with "PAGE:" immediately.
 """
 
     response = llm.generate(prompt)
