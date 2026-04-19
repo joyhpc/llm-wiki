@@ -60,10 +60,12 @@ def lint_dual_wiki(base_path: Path) -> List[str]:
             if 'personal/' in content or '[[personal' in content:
                 issues.append(f"❌ {page.relative_to(base_path)} references personal/ (forbidden)")
 
-    # 检查同名文件冲突
+    # 检查同名文件冲突（排除 index.md 和 log.md）
     if wiki_dir.exists() and personal_dir.exists():
-        wiki_files = {p.relative_to(wiki_dir) for p in wiki_dir.glob('**/*.md')}
-        personal_files = {p.relative_to(personal_dir) for p in personal_dir.glob('**/*.md')}
+        wiki_files = {p.relative_to(wiki_dir) for p in wiki_dir.glob('**/*.md')
+                      if p.name not in ['index.md', 'log.md']}
+        personal_files = {p.relative_to(personal_dir) for p in personal_dir.glob('**/*.md')
+                          if p.name not in ['index.md', 'log.md']}
         conflicts = wiki_files & personal_files
         for conflict in conflicts:
             issues.append(f"⚠️ Name conflict: wiki/{conflict} vs personal/{conflict}")
