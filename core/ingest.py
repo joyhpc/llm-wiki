@@ -2,6 +2,7 @@ from pathlib import Path
 from datetime import datetime
 from typing import Dict, List
 from core.llm import LLMProvider
+from core.index_manager import update_categorized_index
 from utils.parser import parse_document
 from utils.file_ops import write_file, append_file
 
@@ -57,8 +58,8 @@ Start your response with "PAGE:" immediately.
         write_file(full_path, page_content)
         created_pages.append(page_path)
 
-    # 更新 index.md
-    _update_index(index_file, created_pages)
+    # 更新分类索引
+    update_categorized_index(wiki_dir, created_pages)
 
     # 更新 log.md
     log_entry = f"## [{datetime.now().strftime('%Y-%m-%d %H:%M')}] ingest | {source_file.name} → {len(created_pages)} pages\n\n"
@@ -103,28 +104,4 @@ def _parse_multi_page_response(response: str) -> Dict[str, str]:
 
     return pages
 
-def _update_index(index_file: Path, new_pages: List[str]):
-    """更新 index.md 添加新页面链接"""
-    if not index_file.exists():
-        return
-
-    content = index_file.read_text(encoding='utf-8')
-    lines = content.split('\n')
-
-    # 按子目录分组
-    for page in new_pages:
-        subdir = page.split('/')[0]
-        link = f"- [[{page}]]"
-
-        # 找到对应的 section 并添加链接
-        section_header = f"## {subdir.title()}"
-        for i, line in enumerate(lines):
-            if line.startswith(section_header):
-                # 在下一个空行或下一个 ## 之前插入
-                j = i + 1
-                while j < len(lines) and not lines[j].startswith('##') and lines[j].strip():
-                    j += 1
-                lines.insert(j, link)
-                break
-
-    write_file(index_file, '\n'.join(lines))
+# 旧的 _update_index 函数已移除，使用 index_manager.py 中的 update_categorized_index
