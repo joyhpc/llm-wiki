@@ -3,6 +3,8 @@ from datetime import datetime
 from typing import Dict, List
 from core.llm import LLMProvider
 from core.index_manager import update_categorized_index
+from core.archive import archive_old_version
+from core.cascade import notify_referencing_pages
 from utils.parser import parse_document
 from utils.file_ops import write_file, append_file
 
@@ -51,18 +53,38 @@ Start your response with "PAGE:" immediately.
     response = llm.generate(prompt)
     pages = _parse_multi_page_response(response)
 
-    # 写入所有页面
+    # 写入所有页面（带归档和级联更新）
     created_pages = []
+    archived_pages = []
+    updated_pages = []
+
     for page_path, page_content in pages.items():
         full_path = wiki_dir / page_path
+
+        # 检查是否已存在（需要归档）
+        if full_path.exists():
+            archive_path = archive_old_version(wiki_dir, page_path)
+            if archive_path:
+                archived_pages.append(page_path)
+            updated_pages.append(page_path)
+
         write_file(full_path, page_content)
         created_pages.append(page_path)
 
     # 更新分类索引
     update_categorized_index(wiki_dir, created_pages)
 
+    # 级联更新通知
+    for page_path in updated_pages:
+        page_name = page_path.split('/')[-1]
+        notify_referencing_pages(wiki_dir, page_name, log_file)
+
     # 更新 log.md
     log_entry = f"## [{datetime.now().strftime('%Y-%m-%d %H:%M')}] ingest | {source_file.name} → {len(created_pages)} pages\n\n"
+    if archived_pages:
+        log_entry += f"归档旧版本：{len(archived_pages)} 个页面\n\n"
+    if updated_pages:
+        log_entry += f"更新页面：{', '.join(updated_pages)}\n\n"
     if log_file.exists():
         append_file(log_file, log_entry)
     else:
