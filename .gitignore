@@ -3,8 +3,9 @@ __pycache__/
 .pytest_cache/
 config.yaml
 .env
-raw/
-wiki/
-*.md
-!README.md
 venv/
+
+# 用户数据目录
+/wiki/
+/personal/
+/raw/
