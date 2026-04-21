@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "MIT"}
 authors = [
-    {name = "OpenClaw Sirius", email = "sirius@openclaw.ai"}
+    {name = "LLM Wiki Contributors"}
 ]
 
 [tool.pytest.ini_options]

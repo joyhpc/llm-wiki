@@ -6,8 +6,8 @@ with open("README.md", "r", encoding="utf-8") as fh:
 setup(
     name="llm-wiki",
     version="0.1.0",
-    author="OpenClaw Sirius",
-    author_email="sirius@openclaw.ai",
+    author="LLM Wiki Contributors",
+    author_email="",
     description="LLM-powered knowledge management system",
     long_description=long_description,
     long_description_content_type="text/markdown",
