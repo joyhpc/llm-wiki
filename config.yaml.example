@@ -1,0 +1,28 @@
+# LLM Wiki 配置文件
+
+llm:
+  # Provider 选择: auto | claude | ollama
+  # auto: 自动检测环境（Claude Code/Codex/独立运行）
+  provider: auto
+
+  # API Key（仅独立运行时需要）
+  # 支持环境变量: ${ANTHROPIC_API_KEY}
+  api_key: ${ANTHROPIC_API_KEY}
+
+  # 模型选择（可选，覆盖默认值）
+  model: claude-sonnet-4-20250514
+
+  # Ollama 配置（仅 provider=ollama 时需要）
+  # base_url: http://localhost:11434
+
+paths:
+  wiki: ./wiki
+  personal: ./personal
+  raw: ./raw
+
+search:
+  max_results: 10
+
+merge:
+  threshold: 0.8
+  auto_archive: true

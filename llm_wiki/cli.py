@@ -2,7 +2,7 @@
 import click
 import yaml
 from pathlib import Path
-from llm_wiki.core.llm import ClaudeProvider, OllamaProvider
+from llm_wiki.core.llm import create_llm_provider
 from llm_wiki.core.ingest import ingest_document
 from llm_wiki.core.query import query_wiki_auto
 from llm_wiki.core.search import search_wiki
@@ -252,27 +252,11 @@ def _load_config():
     with open(config_file) as f:
         config = yaml.safe_load(f)
 
-    if 'api_key' in config['llm']:
-        api_key = config['llm']['api_key']
-        if api_key.startswith('${') and api_key.endswith('}'):
-            env_var = api_key[2:-1]
-            # Try both ANTHROPIC_API_KEY and ANTHROPIC_AUTH_TOKEN
-            config['llm']['api_key'] = os.getenv(env_var) or os.getenv('ANTHROPIC_AUTH_TOKEN', '')
-
     return config
 
 def _create_llm(config):
     """创建 LLM provider"""
-    provider = config['llm']['provider']
-    if provider == 'claude':
-        return ClaudeProvider(
-            api_key=config['llm']['api_key'],
-            model=config['llm']['model']
-        )
-    elif provider == 'ollama':
-        return OllamaProvider(model=config['llm']['model'])
-    else:
-        raise ValueError(f'Unknown provider: {provider}')
+    return create_llm_provider(config)
 
 if __name__ == '__main__':
     cli()
