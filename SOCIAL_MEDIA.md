@@ -7,7 +7,7 @@
 灵感来自 Karpathy 的 gist，核心特性：
 • 双知识库设计（客观/主观严格隔离）
 • LLM 自动分类、智能查询、语义合并
-• 支持 Claude Code 环境，无需配置 API key
+• 支持 AI Assistant 环境，无需配置 API key
 • 标准 Python 包，pip 一键安装
 
 适合管理论文笔记、技术文档、项目经验。
@@ -22,7 +22,7 @@
 做了个 LLM 知识管理工具 🛠️
 
 扔进去论文/文档，自动整理分类，随时查询。
-支持 Claude Code，零配置。
+支持 AI Assistant，零配置。
 
 开源，需要的拿走 👇
 [GitHub 链接]
@@ -90,7 +90,7 @@ llm-wiki query "问题"
 ## 评论区预设回复
 
 **Q: 需要 API key 吗？**
-A: 独立运行需要 Anthropic API key，在 Claude Code 中用可以零配置
+A: 独立运行需要 Anthropic API key，在 AI Assistant 中用可以零配置
 
 **Q: 支持哪些文档格式？**
 A: 目前支持 Markdown 和 PDF，后续会加更多

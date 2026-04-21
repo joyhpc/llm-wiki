@@ -18,7 +18,7 @@ LLM Wiki 是一个基于 LLM 的知识管理系统，灵感来自 [Andrej Karpat
 - 页面合并优化（并查集算法）
 
 ### 环境自适应
-- 自动检测 Claude Code/Codex 环境
+- 自动检测 AI Assistant/AI Environment 环境
 - 独立运行时支持 Claude API 和 Ollama
 - 无需重复配置 API key
 

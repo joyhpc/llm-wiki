@@ -51,32 +51,32 @@ class OllamaProvider(LLMProvider):
         response = ollama.generate(model=self.model, prompt=prompt)
         return response['response']
 
-class ClaudeCodeProvider(LLMProvider):
-    """Claude Code 环境 Provider，复用当前会话"""
+class AIAssistantProvider(LLMProvider):
+    """AI Assistant 环境 Provider，复用当前会话"""
 
     def __init__(self):
-        # Claude Code 环境下不需要 API key
+        # AI Assistant 环境下不需要 API key
         pass
 
     def generate(self, prompt: str) -> str:
-        """使用当前 Claude Code 会话生成响应"""
-        # 注意：这里假设在 Claude Code 环境中运行
-        # 实际实现需要调用 Claude Code 的内部 API
+        """使用当前 AI Assistant 会话生成响应"""
+        # 注意：这里假设在 AI Assistant 环境中运行
+        # 实际实现需要调用 AI Assistant 的内部 API
         # 暂时抛出 NotImplementedError，等待实际集成
         raise NotImplementedError(
-            "ClaudeCodeProvider requires Claude Code runtime integration"
+            "AIAssistantProvider requires AI Assistant runtime integration"
         )
 
-class CodexProvider(LLMProvider):
-    """Codex 环境 Provider，复用当前会话"""
+class AIEnvironmentProvider(LLMProvider):
+    """AI Environment Provider，复用当前会话"""
 
     def __init__(self):
         pass
 
     def generate(self, prompt: str) -> str:
-        """使用当前 Codex 会话生成响应"""
+        """使用当前 AI Environment 会话生成响应"""
         raise NotImplementedError(
-            "CodexProvider requires Codex runtime integration"
+            "AIEnvironmentProvider requires AI Environment runtime integration"
         )
 
 def create_llm_provider(config: dict) -> LLMProvider:
@@ -92,12 +92,12 @@ def create_llm_provider(config: dict) -> LLMProvider:
     provider = llm_config.get('provider', 'auto')
 
     if provider == 'auto':
-        # 检测 Claude Code 环境
-        if os.getenv('CLAUDE_CODE_SESSION'):
-            return ClaudeCodeProvider()
-        # 检测 Codex 环境
-        elif os.getenv('CODEX_SESSION'):
-            return CodexProvider()
+        # 检测 AI Assistant 环境
+        if os.getenv('AI_ASSISTANT_SESSION'):
+            return AIAssistantProvider()
+        # 检测 AI Environment 环境
+        elif os.getenv('AI_ENV_SESSION'):
+            return AIEnvironmentProvider()
         # 回退到 Claude API
         else:
             return ClaudeProvider(llm_config)

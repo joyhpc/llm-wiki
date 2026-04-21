@@ -10,7 +10,7 @@
 - **智能路由** - 自动检测查询目标（wiki vs personal）
 - **页面合并** - 使用并查集优化，自动归档旧版本
 - **引用追踪** - 级联更新通知
-- **环境自适应** - 自动检测 Claude Code/Codex 环境，无需配置 API key
+- **环境自适应** - 自动检测 AI Assistant/AI Environment 环境，无需配置 API key
 
 ## 快速开始
 

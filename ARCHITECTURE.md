@@ -94,8 +94,8 @@ llm-wiki/
 ```
 create_llm_provider()
     ├── auto 模式检测
-    │   ├── Claude Code 环境 → ClaudeCodeProvider
-    │   ├── Codex 环境 → CodexProvider
+    │   ├── AI Assistant 环境 → ClaudeCodeProvider
+    │   ├── AI Environment 环境 → AIEnvironmentProvider
     │   └── 独立运行 → ClaudeProvider
     ├── claude 模式 → ClaudeProvider
     └── ollama 模式 → OllamaProvider
@@ -185,6 +185,6 @@ ingest (解析 + LLM 分析)
 
 1. **双知识库隔离** - wiki 和 personal 严格分离
 2. **LLM 驱动** - 自动分类、智能查询、语义合并
-3. **环境自适应** - 自动检测 Claude Code/Codex/独立运行
+3. **环境自适应** - 自动检测 AI Assistant/AI Environment/独立运行
 4. **标准 Python 包** - 支持 pip 安装
 5. **工作目录模式** - 类似 git，支持多实例

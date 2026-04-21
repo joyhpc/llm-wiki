@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 页面合并（merge）使用并查集优化
 - 引用追踪（cascade）和归档（archive）
 - 健康检查（lint）
-- LLM provider 支持 auto 模式，自动检测 Claude Code/Codex 环境
+- LLM provider 支持 auto 模式，自动检测 AI Assistant/AI Environment 环境
 - 标准 Python 包结构，支持 `pip install -e .`
 - 配置模板 config.yaml.example
 

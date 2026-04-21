@@ -35,7 +35,7 @@ type: design
 ### 2. LLM Provider：Auto 模式
 
 自动检测运行环境：
-- Claude Code/Codex：复用当前会话 LLM
+- AI Assistant/AI Environment：复用当前会话 LLM
 - 独立运行：读取 config.yaml 中的 API key
 
 配置示例：
@@ -176,7 +176,7 @@ llm-wiki/
 - 健康检查（lint）
 
 ### Changed
-- LLM provider 支持 auto 模式，自动检测 Claude Code/Codex 环境
+- LLM provider 支持 auto 模式，自动检测 AI Assistant/AI Environment 环境
 
 ### Fixed
 - 修复 index.md 和 log.md 被误判为名称冲突
@@ -361,7 +361,7 @@ venv/
 
 ### 功能验证
 - [ ] 全流程测试（init → ingest → query → merge）
-- [ ] 多环境测试（独立运行、Claude Code、Codex）
+- [ ] 多环境测试（独立运行、AI Assistant、AI Environment）
 - [ ] 性能测试通过
 
 ### 发布准备
@@ -434,7 +434,7 @@ venv/
 - 缓解：先发布 MVP，后续迭代优化
 
 ### 风险 4：多环境兼容性
-- 缓解：CI 测试多个 Python 版本，手动测试 Claude Code/Codex
+- 缓解：CI 测试多个 Python 版本，手动测试 AI Assistant/AI Environment
 
 ---
 
