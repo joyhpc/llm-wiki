@@ -2,12 +2,12 @@
 import click
 import yaml
 from pathlib import Path
-from core.llm import ClaudeProvider, OllamaProvider
-from core.ingest import ingest_document
-from core.query import query_wiki_auto
-from core.search import search_wiki
-from core.lint import lint_dual_wiki
-from utils.init_wiki import init_wiki_structure
+from llm_wiki.core.llm import ClaudeProvider, OllamaProvider
+from llm_wiki.core.ingest import ingest_document
+from llm_wiki.core.query import query_wiki_auto
+from llm_wiki.core.search import search_wiki
+from llm_wiki.core.lint import lint_dual_wiki
+from llm_wiki.utils.init_wiki import init_wiki_structure
 import os
 
 @click.group()
@@ -126,8 +126,9 @@ def merge(target, category, threshold, auto_merge):
       merge personal concepts --threshold 0.8
       merge wiki entities --auto-merge
     """
-    from core.merge import find_similar_pages, merge_pages, update_references
-    from core.archive import archive_old_version
+    from llm_wiki.core.merge import find_similar_pages, merge_pages, update_references
+    from llm_wiki.core.merge_optimizer import optimize_merge_order
+    from llm_wiki.core.archive import archive_old_version
 
     base_path = Path.cwd()
     wiki_dir = base_path / target
@@ -146,9 +147,14 @@ def merge(target, category, threshold, auto_merge):
         click.echo('✓ 未发现相似页面')
         return
 
-    click.echo(f'\n发现 {len(similar_pairs)} 对相似页面:\n')
-    for page1, page2, score in similar_pairs:
-        click.echo(f'  {page1} ↔ {page2} (相似度: {score:.2f})')
+    click.echo(f'\n发现 {len(similar_pairs)} 对相似页面')
+
+    # 优化合并顺序
+    merge_tasks = optimize_merge_order(similar_pairs)
+    click.echo(f'优化后：{len(merge_tasks)} 个合并任务\n')
+
+    for primary, secondaries in merge_tasks[:10]:
+        click.echo(f'  {primary} ← {", ".join(secondaries[:3])}{"..." if len(secondaries) > 3 else ""}')
 
     if not auto_merge:
         click.echo('\n使用 --auto-merge 标志自动合并这些页面')
@@ -156,29 +162,53 @@ def merge(target, category, threshold, auto_merge):
 
     # 自动合并
     click.echo('\n开始合并...')
-    for page1, page2, score in similar_pairs:
-        click.echo(f'\n合并 {page1} 和 {page2}...')
+    merged_count = 0
 
-        # 归档次页面
-        secondary_path = f'{category}/{page2}'
-        archive_old_version(wiki_dir, secondary_path)
+    for primary, secondaries in merge_tasks:
+        click.echo(f'\n合并到 {primary}（{len(secondaries)} 个页面）...')
 
-        # 合并内容
-        primary_path = f'{category}/{page1}'
-        merged_content = merge_pages(wiki_dir, primary_path, secondary_path, llm)
+        primary_path = f'{category}/{primary}'
+        primary_file = wiki_dir / primary_path
 
-        # 写入主页面
-        (wiki_dir / primary_path).write_text(merged_content, encoding='utf-8')
+        # 检查主页面是否存在
+        if not primary_file.exists():
+            click.echo(f'  ⚠️ 跳过：主页面 {primary} 不存在')
+            continue
 
-        # 更新所有引用
-        update_references(wiki_dir, page2, page1)
+        # 逐个合并次页面
+        for secondary in secondaries:
+            secondary_path = f'{category}/{secondary}'
+            secondary_file = wiki_dir / secondary_path
 
-        # 删除次页面
-        (wiki_dir / secondary_path).unlink()
+            # 检查次页面是否存在
+            if not secondary_file.exists():
+                click.echo(f'  ⚠️ 跳过：{secondary} 已不存在')
+                continue
 
-        click.echo(f'  ✓ 已合并到 {page1}')
+            # 合并内容
+            try:
+                merged_content = merge_pages(wiki_dir, primary_path, secondary_path, llm)
 
-    click.echo(f'\n✓ 完成！合并了 {len(similar_pairs)} 对页面')
+                # 归档次页面
+                archive_old_version(wiki_dir, secondary_path)
+
+                # 写入主页面
+                primary_file.write_text(merged_content, encoding='utf-8')
+
+                # 更新所有引用
+                update_references(wiki_dir, secondary, primary)
+
+                # 删除次页面（如果还存在）
+                if secondary_file.exists():
+                    secondary_file.unlink()
+
+                merged_count += 1
+                click.echo(f'  ✓ 已合并 {secondary}')
+
+            except Exception as e:
+                click.echo(f'  ✗ 合并 {secondary} 失败: {e}')
+
+    click.echo(f'\n✓ 完成！成功合并了 {merged_count} 个页面')
 
 @cli.command()
 @click.argument('target', type=click.Choice(['wiki', 'personal']))
@@ -190,7 +220,7 @@ def references(target, page):
       references personal gwcphy.md
       references wiki mipi-interface.md
     """
-    from core.cascade import get_referencing_pages, cascade_update_summary
+    from llm_wiki.core.cascade import get_referencing_pages, cascade_update_summary
 
     base_path = Path.cwd()
     wiki_dir = base_path / target

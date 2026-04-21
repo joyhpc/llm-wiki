@@ -1,6 +1,6 @@
 from pathlib import Path
 from typing import List, Dict, Tuple
-from core.llm import LLMProvider
+from llm_wiki.core.llm import LLMProvider
 import re
 
 def find_similar_pages(wiki_dir: Path, category: str, llm: LLMProvider, threshold: float = 0.8) -> List[Tuple[str, str, float]]:

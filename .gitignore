@@ -9,3 +9,4 @@ venv/
 /wiki/
 /personal/
 /raw/
+*.egg-info/

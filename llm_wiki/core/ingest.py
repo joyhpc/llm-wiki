@@ -1,12 +1,12 @@
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, List
-from core.llm import LLMProvider
-from core.index_manager import update_categorized_index
-from core.archive import archive_old_version
-from core.cascade import notify_referencing_pages
-from utils.parser import parse_document
-from utils.file_ops import write_file, append_file
+from llm_wiki.core.llm import LLMProvider
+from llm_wiki.core.index_manager import update_categorized_index
+from llm_wiki.core.archive import archive_old_version
+from llm_wiki.core.cascade import notify_referencing_pages
+from llm_wiki.utils.parser import parse_document
+from llm_wiki.utils.file_ops import write_file, append_file
 
 def ingest_document(
     source_file: Path,

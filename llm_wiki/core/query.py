@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Dict
-from core.llm import LLMProvider
-from core.search import search_wiki
+from llm_wiki.core.llm import LLMProvider
+from llm_wiki.core.search import search_wiki
 
 def query_wiki(question: str, wiki_dir: Path, llm: LLMProvider) -> Dict[str, str]:
     """查询 wiki 并返回答案"""
@@ -71,7 +71,7 @@ def _parse_query_response(response: str) -> tuple[str, list]:
     answer = '\n'.join(answer_lines).strip()
     return answer, sources
 
-from core.router import detect_query_target
+from llm_wiki.core.router import detect_query_target
 
 def query_wiki_auto(question: str, base_path: Path, llm: LLMProvider) -> Dict[str, str]:
     """自动检测目标并查询"""

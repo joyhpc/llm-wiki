@@ -1,6 +1,6 @@
 from pathlib import Path
 from datetime import datetime
-from utils.file_ops import write_file
+from llm_wiki.utils.file_ops import write_file
 
 def init_wiki_structure(base_path: Path, target: str):
     """初始化 wiki 或 personal 目录结构"""
